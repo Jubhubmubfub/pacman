@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Pacman</title>
+    <style type="text/css">
+    body {
+      margin:0px;
+      background:black;
+      color:white;
+    }
+      div.row {
+        height:20px;
+      }
+      div.row div {
+        width: 20px;
+        height: 20px;
+        display:inline-block;
+      }
+      div.brick {
+        background-color:blue;
+      }
+      div.coin {
+        background: url('coin1.gif') no-repeat center;
+        height:10px;
+        width:10px;
+        background-size:cover;
+        background-repeat:none
+      }
+      div#pacman {
+        background: url('pac.gif');
+        background-size:cover;
+        background-repeat: no-repeat;
+        width:20px;
+        height:20px;
+        position:absolute;
+        top:20px;
+        left:20px;
+      }
+    </style>
+  </head>
+  <body>
+
+
+
+    <!-- List of features to build<br>
+
+    1)Have JS display the world of brick/coin/etc <br>
+    2)Have the pacman move up and down -->
+
+    <div class="container">
+      <div id='world'></div>
+      <div id='pacman'></div>
+    </div>
+
+    <script>
+
+
+    // 1 = brick, 0 = coin, 2 = nothing, 3 = pacman
+
+    var world = [
+      [1,1,1,1,1,1,1,1,1,1,1],
+      [1,0,0,0,0,0,0,1,0,0,1],
+      [1,0,0,1,2,0,0,0,0,0,1],
+      [1,0,0,0,0,2,2,2,0,0,1],
+      [1,0,0,0,0,2,2,2,0,0,1],
+      [1,0,0,0,0,2,2,2,0,0,1],
+      [1,0,0,0,0,2,1,0,0,0,1],
+      [1,1,1,1,1,1,1,1,1,1,1],
+
+    ];
+
+    function displayWorld(){
+      var output = '';
+
+      for(var i=0;i<world.length;i++){
+        output += "<div class='row'>";
+        for(var j=0; j<world[i].length;j++){
+          if(world[i][j] == 1)
+            output += "<div class='brick'></div>";
+          else if(world[i][j] == 0)
+            output += "<div class='coin'></div>";
+          else if(world[i][j] == 2)
+            output += "<div class=''></div>";
+        }
+        output += "</div>";
+      }
+      // console.log(output);
+      document.getElementById('world').innerHTML = output;
+    }
+    displayWorld();
+
+
+    document.onkeydown = function(e){
+      if(e.keyCode === 37){
+        document.getElementById('pacman').style.left += 50+"px"
+      }
+      console.log(e.keyCode)
+
+    };
+
+    </script>
+
+  </body>
+</html>

@@ -3,6 +3,9 @@
   <head>
     <meta charset="utf-8">
     <title>Pacman</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <style type="text/css">
     body {
       margin:0px;
@@ -52,10 +55,11 @@
       <div id='world'></div>
       <div id='pacman'></div>
       <div id="score">Score: </div>
+      <button id="reset">New world</button>
+      <button id="resetScore">Reset Score</button>
     </div>
 
     <script>
-
 
     // 1 = brick, 0 = coin, 2 = nothing, 3 = pacman
 
@@ -84,6 +88,7 @@
     // make blocks less common to generate
 
     function generateWorld(){ //generate a random world each time
+      console.log("generating world");
       for (var i = 0; i < 8;i++){ //this targets the rows or 'outer indexes'
         for (var j = 0; j< 11; j++){ //this targets the columns or 'inner indexes'
           if (i === 0 || i === 7){ //sets the first and last row to blocks
@@ -136,7 +141,7 @@
       document.getElementById('pacman').style.top = (pacman.y)*20+"px";
     };
     function displayScore(){
-      document.getElementById('score').innerHTML = score;
+      document.getElementById('score').innerHTML = "Score: "+score;
     };
 
 
@@ -155,7 +160,7 @@
         pacman.y++;
         console.log(pacman.y);
       };
-      displayPacman();
+      displayPacman(); //update pacman position
 
       //this makes pacman 'eat' coins
       if (world[pacman.y][pacman.x] === 0){
@@ -163,10 +168,26 @@
         score+= 20;
         displayWorld();
         displayScore();
-      };
+      }; // end of coin eat
 
-    };
+    }; // end of onkeydown function
+    $(document).ready(function(){
+      $('.container').on('click','#reset',function(){
+        console.log("you clicked the button");
+        generateWorld();
+        displayWorld();
 
+      });//end of click function
+      $('.container').on('click','#resetScore',function(){
+        console.log("you clicked the reset button");
+        score = 0;
+        displayScore();
+
+      });//end of click function
+
+
+
+  }); //end of document ready
     </script>
 
   </body>

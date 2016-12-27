@@ -82,11 +82,23 @@
     // make sure the first and last array index is all 1's
     // make sure the first and last array index of each array is 1
 
-    var generateWorld(){
-      for (var i = 0; i < 8;i++){ //this targets the rows
-        for (var j = 0; j< 11; j++) //this targets the columns
-      }
-    }
+    function generateWorld(){
+      for (var i = 0; i < 8;i++){ //this targets the rows or 'outer indexes'
+        for (var j = 0; j< 11; j++){ //this targets the columns or 'inner indexes'
+          if (i === 0 || i === 7){ //sets the first and last row to blocks
+              world[i][j] = 1;
+          } //end of if
+          else { //this should set the rows that aren't the top and bottom ones
+            if (j === 0 || j === 10) { //this sets first and last index of a row to a block
+              world[i][j] = 1;
+            } // end of inner if
+            else if (j != 0 && j != 10){ // this sets inner indexes to a random number between 0 and 2
+              world[i][j] = Math.floor(Math.random()*3);
+            } //end of else if
+          } //end of else
+        }//end of inner for
+      } //end of outer for
+    }// end of generateWorld function
 
 
 
@@ -102,12 +114,13 @@
             output += "<div class='coin'></div>";
           else if(world[i][j] == 2)
             output += "<div class=''></div>";
-        }
+        };
         output += "</div>";
-      }
+      };
       // console.log(output);
       document.getElementById('world').innerHTML = output;
-    }
+    };
+    generateWorld();
     displayWorld();
     displayPacman();
     displayScore();
@@ -115,10 +128,10 @@
     function displayPacman(){
       document.getElementById('pacman').style.left = (pacman.x)*20+"px";
       document.getElementById('pacman').style.top = (pacman.y)*20+"px";
-    }
+    };
     function displayScore(){
       document.getElementById('score').innerHTML = score;
-    }
+    };
 
 
     document.onkeydown = function(e){
@@ -135,7 +148,7 @@
       } else if (e.keyCode === 40 && world[pacman.y+1][pacman.x] != 1){
         pacman.y++;
         console.log(pacman.y);
-      }
+      };
       displayPacman();
 
       //this makes pacman 'eat' coins
@@ -144,7 +157,7 @@
         score+= 20;
         displayWorld();
         displayScore();
-      }
+      };
 
     };
 

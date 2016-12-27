@@ -81,19 +81,25 @@
     // the world is an array with arrays as indexes.  Each inner array contains a number between 0 and 2
     // make sure the first and last array index is all 1's
     // make sure the first and last array index of each array is 1
+    // make blocks less common to generate
 
-    function generateWorld(){
+    function generateWorld(){ //generate a random world each time
       for (var i = 0; i < 8;i++){ //this targets the rows or 'outer indexes'
         for (var j = 0; j< 11; j++){ //this targets the columns or 'inner indexes'
           if (i === 0 || i === 7){ //sets the first and last row to blocks
-              world[i][j] = 1;
+              world[i][j] = 2;
           } //end of if
           else { //this should set the rows that aren't the top and bottom ones
             if (j === 0 || j === 10) { //this sets first and last index of a row to a block
-              world[i][j] = 1;
+              world[i][j] = 2;
             } // end of inner if
             else if (j != 0 && j != 10){ // this sets inner indexes to a random number between 0 and 2
-              world[i][j] = Math.floor(Math.random()*3);
+              if (Math.floor(Math.random()*10) === 0){ // 1 in 5 chance to set a space to a block
+                world[i][j] = 2;
+              } //end of if inside else if
+              else {
+                world[i][j] = Math.floor(Math.random()*2); //sets inner index to a coin or empty space
+              } // end of else if inside of else if
             } //end of else if
           } //end of else
         }//end of inner for
@@ -108,11 +114,11 @@
       for(var i=0;i<world.length;i++){
         output += "<div class='row'>";
         for(var j=0; j<world[i].length;j++){
-          if(world[i][j] == 1)
+          if(world[i][j] == 2)
             output += "<div class='brick'></div>";
           else if(world[i][j] == 0)
             output += "<div class='coin'></div>";
-          else if(world[i][j] == 2)
+          else if(world[i][j] == 1)
             output += "<div class=''></div>";
         };
         output += "</div>";
@@ -136,16 +142,16 @@
 
     document.onkeydown = function(e){
       console.log(e.keyCode);
-      if(e.keyCode === 37 && world[pacman.y][pacman.x-1] != 1){
+      if(e.keyCode === 37 && world[pacman.y][pacman.x-1] != 2){
         pacman.x--;
         console.log(pacman.x);
-      } else if (e.keyCode === 39 && world[pacman.y][pacman.x+1] != 1){
+      } else if (e.keyCode === 39 && world[pacman.y][pacman.x+1] != 2){
         pacman.x++;
         console.log(pacman.x);
-      } else if (e.keyCode === 38 && world[pacman.y-1][pacman.x] != 1){
+      } else if (e.keyCode === 38 && world[pacman.y-1][pacman.x] != 2){
         pacman.y--;
         console.log(pacman.y);
-      } else if (e.keyCode === 40 && world[pacman.y+1][pacman.x] != 1){
+      } else if (e.keyCode === 40 && world[pacman.y+1][pacman.x] != 2){
         pacman.y++;
         console.log(pacman.y);
       };
@@ -153,7 +159,7 @@
 
       //this makes pacman 'eat' coins
       if (world[pacman.y][pacman.x] === 0){
-        world[pacman.y][pacman.x] = 2;
+        world[pacman.y][pacman.x] = 1;
         score+= 20;
         displayWorld();
         displayScore();

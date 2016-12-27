@@ -34,8 +34,8 @@
         width:20px;
         height:20px;
         position:absolute;
-        top:20px;
-        left:20px;
+        /*top:20px;*/
+        /*left:20px;*/
       }
     </style>
   </head>
@@ -51,6 +51,7 @@
     <div class="container">
       <div id='world'></div>
       <div id='pacman'></div>
+      <div id="score">Score: </div>
     </div>
 
     <script>
@@ -58,9 +59,14 @@
 
     // 1 = brick, 0 = coin, 2 = nothing, 3 = pacman
 
+    var pacman = {
+      x: 1,
+      y: 1
+    };
+
     var world = [
       [1,1,1,1,1,1,1,1,1,1,1],
-      [1,0,0,0,0,0,0,1,0,0,1],
+      [1,2,0,0,0,0,0,1,0,0,1],
       [1,0,0,1,2,0,0,0,0,0,1],
       [1,0,0,0,0,2,2,2,0,0,1],
       [1,0,0,0,0,2,2,2,0,0,1],
@@ -69,6 +75,7 @@
       [1,1,1,1,1,1,1,1,1,1,1],
 
     ];
+    var score = 0;
 
     function displayWorld(){
       var output = '';
@@ -89,13 +96,42 @@
       document.getElementById('world').innerHTML = output;
     }
     displayWorld();
+    displayPacman();
+    displayScore();
+
+    function displayPacman(){
+      document.getElementById('pacman').style.left = (pacman.x)*20+"px";
+      document.getElementById('pacman').style.top = (pacman.y)*20+"px";
+    }
+    function displayScore(){
+      document.getElementById('score').innerHTML = score;
+    }
 
 
     document.onkeydown = function(e){
-      if(e.keyCode === 37){
-        document.getElementById('pacman').style.left += 50+"px"
+      console.log(e.keyCode);
+      if(e.keyCode === 37 && world[pacman.y][pacman.x-1] != 1){
+        pacman.x--;
+        console.log(pacman.x);
+      } else if (e.keyCode === 39 && world[pacman.y][pacman.x+1] != 1){
+        pacman.x++;
+        console.log(pacman.x);
+      } else if (e.keyCode === 38 && world[pacman.y-1][pacman.x] != 1){
+        pacman.y--;
+        console.log(pacman.y);
+      } else if (e.keyCode === 40 && world[pacman.y+1][pacman.x] != 1){
+        pacman.y++;
+        console.log(pacman.y);
       }
-      console.log(e.keyCode)
+      displayPacman();
+
+      //this makes pacman 'eat' coins
+      if (world[pacman.y][pacman.x] === 0){
+        world[pacman.y][pacman.x] = 2;
+        score+= 20;
+        displayWorld();
+        displayScore();
+      }
 
     };
 

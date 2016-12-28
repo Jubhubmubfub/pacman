@@ -30,6 +30,13 @@
         background-size:cover;
         background-repeat:none
       }
+      div.cherry {
+        background: url('cherry.png') no-repeat center;
+        height:10px;
+        width:10px;
+        background-size:cover;
+        background-repeat:none
+      }
       div#pacman {
         background: url('pac.gif');
         background-size:cover;
@@ -39,6 +46,25 @@
         position:absolute;
         /*top:20px;*/
         /*left:20px;*/
+      }
+      div#ghost {
+        background: url('ghost.gif');
+        background-size:cover;
+        background-repeat: no-repeat;
+        width:20px;
+        height:20px;
+        position:absolute;
+        /*top:20px;*/
+        /*left:20px;*/
+      }
+      #lose {
+        color:red;
+      }
+      #topScores {
+        color:yellow;
+      }
+      ul {
+        list-style-type: none;
       }
     </style>
   </head>
@@ -54,23 +80,83 @@
     <div class="container">
       <div id='world'></div>
       <div id='pacman'></div>
+      <div id='ghost'></div>
       <div id="score">Score: </div>
+      <div id="level">Level: 1</div>
       <button id="reset">New world</button>
-      <button id="resetScore">Reset Score</button>
+      <!-- <button id="resetScore">Reset Score</button> -->
+      <button id="gameReset">New Game</button>
+      <div id="lose"></div>
+      <div id="topScores">
+        <ul>Top Scores
+          <li id="top1"></li>
+          <li id="top2"></li>
+          <li id="top3"></li>
+        </ul>
+      </div>
     </div>
 
     <script>
 
-    // 1 = brick, 0 = coin, 2 = nothing, 3 = pacman
+    // 3 = brick, 1 = coin, 0 = nothing, 2 = cherry
+    var temp = 0;
+    var temp1 = 0;
+    var topScoreCount = 1;
+    var coinCount = 0;
+    var worldCount = 1;
+    var topScores = [0,0,0];
 
+    function displayTopScore(){
+      document.getElementById('top1').innerHTML = "1. "+topScores[0];
+      document.getElementById('top2').innerHTML = "2. "+topScores[1];
+      document.getElementById('top3').innerHTML = "3. "+topScores[2];
+    }
     var pacman = {
-      x: 1,
-      y: 1
+      x: 5,
+      y: 3
     };
+
+    var ghost = {
+      x: 2,
+      y: 2
+    }
+    function ghostPosition(){
+      ghost.x = Math.floor(Math.random()*(9)+1);
+      ghost.y = Math.floor(Math.random()*(6)+1);
+      if ((ghost.x === pacman.x)&&(ghost.y === pacman.y)){
+        ghost.x = Math.floor(Math.random()*(9)+1);
+        ghost.y = Math.floor(Math.random()*(6)+1);
+      }
+      console.log("ghost column is now "+ghost.x+" and ghost row is "+ghost.y);
+    }
+    function ghostMove(){ // this moves the ghost either up down left or right
+      var move = Math.random();
+      if(move <0.25 && ghost.x<9 && world[ghost.x+1][ghost.y] != 3){
+        ghost.x++
+        displayGhost();
+        console.log("ghost is now on row: "+ghost.y+" and column "+ghost.x);
+      }
+      else if(move >= 0.25 && move < .5 && ghost.x>1 && world[ghost.x-1][ghost.y] != 3){
+        ghost.x--
+        displayGhost();
+        console.log("ghost is now on row: "+ghost.y+" and column "+ghost.x);
+      }
+      else if(move >= 0.5 && move < .75 && ghost.y<6 && world[ghost.x][ghost.y+1] != 3){
+        ghost.y++
+        displayGhost();
+        console.log("ghost is now on row: "+ghost.y+" and column "+ghost.x);
+      }
+      else if (move >= .75 && ghost.y>1 && world[ghost.x][ghost.y-1] != 3){
+        ghost.y--
+        console.log("ghost is now on row: "+ghost.y+" and column "+ghost.x);
+        displayGhost();
+      }
+    }
+
 
     var world = [
       [1,1,1,1,1,1,1,1,1,1,1],
-      [1,2,0,0,0,0,0,1,0,0,1],
+      [1,0,0,0,0,0,0,1,0,0,1],
       [1,0,0,1,2,0,0,0,0,0,1],
       [1,0,0,0,0,2,2,2,0,0,1],
       [1,0,0,0,0,2,2,2,0,0,1],
@@ -86,104 +172,192 @@
     // make sure the first and last array index is all 1's
     // make sure the first and last array index of each array is 1
     // make blocks less common to generate
-
-    function generateWorld(){ //generate a random world each time
-      console.log("generating world");
-      for (var i = 0; i < 8;i++){ //this targets the rows or 'outer indexes'
-        for (var j = 0; j< 11; j++){ //this targets the columns or 'inner indexes'
-          if (i === 0 || i === 7){ //sets the first and last row to blocks
-              world[i][j] = 2;
-          } //end of if
-          else { //this should set the rows that aren't the top and bottom ones
-            if (j === 0 || j === 10) { //this sets first and last index of a row to a block
-              world[i][j] = 2;
-            } // end of inner if
-            else if (j != 0 && j != 10){ // this sets inner indexes to a random number between 0 and 2
-              if (Math.floor(Math.random()*10) === 0){ // 1 in 5 chance to set a space to a block
-                world[i][j] = 2;
-              } //end of if inside else if
-              else {
-                world[i][j] = Math.floor(Math.random()*2); //sets inner index to a coin or empty space
-              } // end of else if inside of else if
-            } //end of else if
-          } //end of else
-        }//end of inner for
-      } //end of outer for
-    }// end of generateWorld function
-
-
-
-    function displayWorld(){
+    // dont generate a block, cherry, or coin if pacman is on that current position
+    // dont generate a block, cherry, or coin if ghost is on that current position
+    function displayWorld(){ //shows the world's current status
       var output = '';
 
       for(var i=0;i<world.length;i++){
         output += "<div class='row'>";
         for(var j=0; j<world[i].length;j++){
-          if(world[i][j] == 2)
+          if(world[i][j] == 3)
             output += "<div class='brick'></div>";
           else if(world[i][j] == 0)
             output += "<div class='coin'></div>";
           else if(world[i][j] == 1)
             output += "<div class=''></div>";
+          else if(world[i][j] == 2)
+            output += "<div class='cherry'></div>";
         };
         output += "</div>";
       };
       // console.log(output);
       document.getElementById('world').innerHTML = output;
     };
+
+    function generateWorld(){ //generate a random world each time
+      console.log("generating world");
+      for (var i = 0; i < 8;i++){ //this targets the rows or 'outer indexes'
+        for (var j = 0; j< 11; j++){ //this targets the columns or 'inner indexes'
+          if (i === 0 || i === 7){ //sets the first and last row to blocks
+              world[i][j] = 3;
+          } //end of if
+          else { //this should set the rows that aren't the top and bottom ones
+            if (j === 0 || j === 10) { //this sets first and last index of a row to a block
+              world[i][j] = 3;
+            } // end of inner if
+            else if (j != 0 && j != 10 ){ // this sets inner indexes to a random number between 0 and 2
+              if (Math.floor(Math.random()*10) === 0 && (j != pacman.x && i != pacman.y) && (j != ghost.x && i != ghost.y)){ // 1 in 5 chance to set a space to a block
+                world[i][j] = 3;
+              } //end of else if inside else if
+              else if (Math.floor(Math.random()*20) === 1 && (j != pacman.x && i != pacman.y) && (j != ghost.x && i != ghost.y)){ // 1 in 5 chance to set a space to a cherry
+                console.log("got a cherry");
+                world[i][j] = 2;
+              } //end of esle if if inside else if
+              else if ((j === pacman.x && i === pacman.y) || (j === ghost.x && i === ghost.y) ) { //doesn't allow a spot under pacman or ghost to be a coin, cherry, or block
+                world[i][j] =1;
+              } // end of else if inside of else if
+              else if (Math.floor(Math.random()*2) === 0){
+                world[i][j] = 0; //sets inner index to a coin
+                coinCount++;
+              } // end of else if inside of else if
+              else {
+                world[i][j] = 1; //sets inner index to a coin or empty space
+              } // end of else if inside of else if
+            } //end of else if
+          } //end of else
+        }//end of inner for
+      } //end of outer for
+      console.log("the amount of coins is: "+coinCount);
+    }// end of generateWorld function
+
+
+
+
     generateWorld();
     displayWorld();
     displayPacman();
+    displayGhost();
     displayScore();
+    displayTopScore();
 
-    function displayPacman(){
+    function displayGhost(){ //shows ghost's current position
+      document.getElementById('ghost').style.left = (ghost.x)*20+"px";
+      document.getElementById('ghost').style.top = (ghost.y)*20+"px";
+      console.log("display Ghost ran");
+    }
+
+    function displayPacman(){ //shows pacman's current position
       document.getElementById('pacman').style.left = (pacman.x)*20+"px";
       document.getElementById('pacman').style.top = (pacman.y)*20+"px";
+      // console.log("pacman is at row "+pacman.y+" and column "+pacman.x);
     };
-    function displayScore(){
+    function displayScore(){ // shows current score
       document.getElementById('score').innerHTML = "Score: "+score;
     };
 
 
-    document.onkeydown = function(e){
-      console.log(e.keyCode);
-      if(e.keyCode === 37 && world[pacman.y][pacman.x-1] != 2){
+    document.onkeydown = function(e){ //actions when keys are pressed
+      if(e.keyCode === 37 && world[pacman.y][pacman.x-1] != 3){ // moves pacman to the left
         pacman.x--;
-        console.log(pacman.x);
-      } else if (e.keyCode === 39 && world[pacman.y][pacman.x+1] != 2){
+        document.getElementById('pacman').style.transform = "rotate(180deg)";
+        ghostMove()
+      } else if (e.keyCode === 39 && world[pacman.y][pacman.x+1] != 3){ // moves pacman to the right
         pacman.x++;
-        console.log(pacman.x);
-      } else if (e.keyCode === 38 && world[pacman.y-1][pacman.x] != 2){
+        document.getElementById('pacman').style.transform = "rotate(0deg)";
+        ghostMove()
+      } else if (e.keyCode === 38 && world[pacman.y-1][pacman.x] != 3){ // moves pacman up
         pacman.y--;
-        console.log(pacman.y);
-      } else if (e.keyCode === 40 && world[pacman.y+1][pacman.x] != 2){
+        document.getElementById('pacman').style.transform = "rotate(270deg)";
+        ghostMove()
+      } else if (e.keyCode === 40 && world[pacman.y+1][pacman.x] != 3){ // moves pacman down
         pacman.y++;
-        console.log(pacman.y);
+        document.getElementById('pacman').style.transform = "rotate(90deg)";
+        ghostMove()
       };
       displayPacman(); //update pacman position
 
       //this makes pacman 'eat' coins
       if (world[pacman.y][pacman.x] === 0){
         world[pacman.y][pacman.x] = 1;
+        document.getElementById('lose').innerHTML = "";
         score+= 20;
+        coinCount--;
+        console.log("coint count is now: "+coinCount);
+        displayWorld();
+        displayScore();
+        if (coinCount === 0){
+          document.getElementById('lose').innerHTML = "You collected all the coins!"
+          worldCount++;
+          document.getElementById('level').innerHTML = "Level: "+worldCount;
+          generateWorld();
+          displayWorld();
+        }
+      }; // end of coin eat
+      //this makes pacman 'eat' cherries
+      if (world[pacman.y][pacman.x] === 2){
+        world[pacman.y][pacman.x] = 1;
+        score+= 50;
         displayWorld();
         displayScore();
       }; // end of coin eat
+      //this makes pacman die when touching a ghost
+      if ((pacman.x === ghost.x) && (pacman.y === ghost.y)){
+        document.getElementById('lose').innerHTML = "You Lose";
+        document.getElementById('pacman').style = "background:none"
+        pacman.x = 100;
+        pacman.y = 100;
+        if (score > topScores[0]){ // this is populating the Top Scores
+          temp = topScores[0];
+          topScores[0] = score;
+          temp1 = topScores[1];
+          topScores[1] = temp;
+          topScores[2] = temp1;
+        } else if (score > topScores[1]){
+          temp = topScores[1];
+          topScores[1] = score;
+          topScores[2] = temp;
+        } else if (score > topScores[2]){
+          topScores[2] = score;
+        }
+        displayWorld();
+        displayScore();
+        displayTopScore();
+      }; // end of coin eat
 
     }; // end of onkeydown function
-    $(document).ready(function(){
+    $(document).ready(function(){ //adds functionality to the buttons
       $('.container').on('click','#reset',function(){
         console.log("you clicked the button");
+        coinCount = 0;
         generateWorld();
         displayWorld();
+
 
       });//end of click function
       $('.container').on('click','#resetScore',function(){
         console.log("you clicked the reset button");
         score = 0;
         displayScore();
-
       });//end of click function
+
+      $('.container').on('click','#gameReset',function(){
+        console.log("you clicked on the game Reset button");
+        score = 0;
+        document.getElementById('pacman').style = ("background: pac.gif");
+        document.getElementById('lose').innerHTML = ("");
+        pacman.x = 5;
+        pacman.y = 3;
+        coinCount = 0;
+        worldCount = 1;
+        document.getElementById('level').innerHTML = "Level: " + worldCount;
+        ghostPosition();
+        displayGhost();
+        generateWorld();
+        displayPacman();
+        displayWorld();
+        displayScore();
+      })
 
 
 
